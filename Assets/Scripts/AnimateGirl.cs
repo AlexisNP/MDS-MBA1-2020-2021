@@ -1,66 +1,72 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(SpriteRenderer), typeof(Animator), typeof(Rigidbody2D))]
-public class AnimateGirl : MonoBehaviour
-{
+public class AnimateGirl : MonoBehaviour {
     [Tooltip("Vitesse max en unités par secondes")]
-    public int MaxSpeed = 2;
+    int MaxSpeed = 5;
 
     // Autres scripts
-    private SpriteRenderer spriteRenderer;
-    private Animator animator;
-    private Rigidbody2D rigidbody2D;
+    SpriteRenderer spriteRenderer;
+    Animator animator;
+    Rigidbody2D rb;
+
+    bool isMoving = false;
 
     // variables de mon instance
-    private Vector3 speed;
+    Vector3 speed;
 
     // statics
-    private static readonly int Speed = Animator.StringToHash("Speed");
-    private static readonly int Roll = Animator.StringToHash("Roll");
-    private static readonly int GoingUp = Animator.StringToHash("GoingUp");
+    static readonly int Speed = Animator.StringToHash("Speed");
+    static readonly int Roll = Animator.StringToHash("Roll");
 
-    void Awake()
-    {
+    void Awake() {
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
-        rigidbody2D = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
-    void FixedUpdate()
-    {
+    void FixedUpdate() {
+        isMoving = false;
+        characterControls();
+    }
+
+    void characterControls() {
         var maxDistancePerFrame = MaxSpeed;
         Vector3 move = Vector3.zero;
 
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
+        // RIGHT + LEFT
+        if (Input.GetKey(KeyCode.RightArrow)) {
+            isMoving = true;
             move += Vector3.right * maxDistancePerFrame;
             spriteRenderer.flipX = false;
         }
-        else if (Input.GetKey(KeyCode.LeftArrow))
-        {
+        else if (Input.GetKey(KeyCode.LeftArrow)) {
+            isMoving = true;
             move += Vector3.left * maxDistancePerFrame;
             spriteRenderer.flipX = true;
         }
 
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
+        // UP + DOWN
+        if (Input.GetKey(KeyCode.UpArrow)) {
+            isMoving = true;
             move += Vector3.up * maxDistancePerFrame;
         }
-        else if (Input.GetKey(KeyCode.DownArrow))
-        {
+        else if (Input.GetKey(KeyCode.DownArrow)) {
+            isMoving = true;
             move += Vector3.down * maxDistancePerFrame;
         }
 
-        if (animator.GetBool(Roll)) animator.ResetTrigger(Roll);
-        // Ici on utilise GetKeyDown, qui ne retourne true que la première frame où la touche est appuyée
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            animator.SetTrigger(Roll);
-        }
-
-        animator.SetBool(GoingUp, Input.GetKey(KeyCode.UpArrow));
+        // "Roll" action
+        // if (animator.GetBool(Roll)) animator.ResetTrigger(Roll);
+        // if (Input.GetKeyDown(KeyCode.Space)) {
+        //     animator.SetTrigger(Roll);
+        // }
 
         animator.SetFloat(Speed, move.magnitude * 10f);
-        rigidbody2D.velocity = move;
+        setSpeed(move);
+    }
+
+    void setSpeed(Vector3 move) {
+        rb.velocity = move;
     }
 }
